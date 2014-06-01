@@ -1,4 +1,4 @@
-#Load jQuery
+//Load jQuery
 (function(){
   var newscript = document.createElement('script');
      newscript.type = 'text/javascript';
@@ -7,7 +7,7 @@
   (document.getElementsByTagName('head')[0]||document.getElementsByTagName('body')[0]).appendChild(newscript);
 })();
 
-#Test 
+//Test if jQuery loaded
 $("p")
 
 $.ajaxSetup({
@@ -35,6 +35,7 @@ $.ajaxSetup({
   }
 })();
 
+//Modifies the open method
 (function() {
     XMLHttpRequest.prototype.open = function(method, url, async, user, pass) {
         console.log("In open method. url is " + url);
@@ -43,20 +44,89 @@ $.ajaxSetup({
 })();
 
 
-(function() {
-    XMLHttpRequest.prototype.send = function() {
-        console.log("In send method. r is ");
-        var r = rand();
-        window[r]
-        console.log(arguments);
-    }
-})();
+//
+//   Utilitity functions
+//
+//Gets type of object
+var toType = function(obj) {  
+  return ({}).toString.call(obj).match(/\s([a-zA-Z]+)/)[1].toLowerCase()
+}
 
+
+//Get 3 character random alphanumeric string
 rand = function() {
     return Math.random().toString(36).substr(2, 3)
 }
 
+/// EO Utility functions
+
+//send debug-v1 
+(function() {
+    XMLHttpRequest.prototype.send = function() {
+        console.log("In send method. r is "); 
+        var r = rand();
+        window[r] =arguments;
+        console.log(r);
+    }
+})();
+
+log = function(obj){console.log(obj);}
+
+//Get user message
+getmsg = function(rawstr){
+    log("In getmsg. rawstr is " + rawstr);
+    log(rawstr);
+    if (rawstr.indexOf("user-generated-message") < 0) {
+        return null;
+    }
+    var dec = decodeURIComponent(rawstr); //decoded string
+    var kvvect = dec.split("&"); //key value pair vector
+    var kvobj = null;
+    for (var i=0; i<kvvect.length; i++) {
+        if(kvvect[i].indexOf("=") > 0){
+            var kv = kvvect[i].split("="); //tuple of key and value
+            kvobj[kv[0]] = kvobj[1];
+        }
+    }
+    return kvobj;   
+}
+
+MsgParser = {
+
+    parse: function(rawstr){
+        if (rawstr.indexOf("user-generated-message") < 0) {
+            return null;
+        }
+        var dec = decodeURIComponent(rawstr);
+        var kvvect = dec.split("&");
+        var kvobj = {};
+        for (var i=0; i<kvvect.length; i++) {
+            if(kvvect[i].indexOf("=") > 0){
+            var kv = kvvect[i].split("="); //tuple of key and value
+            kvobj[kv[0]] = kvobj[1];
+        }    
+        }
+        return kvobj;
+    }
+    
+}
+
+
+//send debug-v2 
+(function() {
+    XMLHttpRequest.prototype.send = function() {
+        console.log("In send message");
+        console.log(getmsg(arguments));        
+    }
+})();
 
 
 
-"message_batch[0][action_type]=ma-type%3Auser-generated-message&message_batch[0][thread_id]=mid.1377353860395%3A0dcf589fd6876b5672&message_batch[0][author]=fbid%3A542985460&message_batch[0][author_email]&message_batch[0][coordinates]&message_batch[0][timestamp]=1401222833307&message_batch[0][timestamp_absolute]=Today&message_batch[0][timestamp_relative]=4%3A33pm&message_batch[0][timestamp_time_passed]=0&message_batch[0][is_unread]=false&message_batch[0][is_cleared]=false&message_batch[0][is_forward]=false&message_batch[0][is_filtered_content]=false&message_batch[0][is_spoof_warning]=false&message_batch[0][source]=source%3Achat%3Aweb&message_batch[0][source_tags][0]=source%3Achat&message_batch[0][body]=hello%20world&message_batch[0][has_attachment]=false&message_batch[0][html_body]=false&&message_batch[0][specific_to_list][0]=fbid%3A542985460&message_batch[0][specific_to_list][1]=fbid%3A542985460&message_batch[0][signatureID]=1ede20c6&message_batch[0][ui_push_phase]=V3&message_batch[0][status]=0&message_batch[0][message_id]=%3C1401222833307%3A2177927765-1706697862%40mail.projektitan.com%3E&&client=mercury&__user=542985460&__a=1&__dyn=7n8anEAMCBynzpQ9UoHaEWy6zECQqbx2mbAKGiyGGEVF4YxUpBxCviG9zo&__req=1a&fb_dtsg=AQGhITzGAOLs&ttstamp=2658171104738412271657976115&__rev=1264587"
+
+parser=new DOMParser();
+var doc = parser.parseFromString(txt,"text/xml");
+var doc = parser.parseFromString(txt, "application/xml");
+var doc = parser.parseFromString(txt, "multipart/form-data");
+var doc = parser.parseFromString(txt, "application/x-www-form-urlencoded");
+//Decode encoded uri
+decodeURIComponent(encoded_uri) 
