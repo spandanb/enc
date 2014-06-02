@@ -91,22 +91,84 @@ getmsg = function(rawstr){
     return kvobj;   
 }
 
-MsgParser = {
+map = function(func, arr){
+    for(var i=0; i<arr.length; i++){
+        arr[i] = func(arr[i])
+    }
+    return arr;
+}
 
+filter = function(func, arr){
+    ret = [];
+    for(var i=0; i<arr.length; i++){
+        if (!!func(arr[i])){
+            ret.push(arr[i]);
+        }
+    }
+    return ret;
+}
+
+//Returns a left partially applied function
+function partial( fn /*, args...*/) { 
+  var aps = Array.prototype.slice,
+    args = aps.call( arguments, 1 );
+  
+  return function() {
+    return fn.apply( this, args.concat( aps.call( arguments ) ) );
+  };
+}
+
+//Returns a right partially applied function
+function partialRight( fn /*, args...*/) {
+  var aps = Array.prototype.slice,
+    args = aps.call( arguments, 1 );
+  
+  return function() {
+    return fn.apply( this, aps.call( arguments ).concat( args ) );
+  };
+}
+
+
+MsgParser = {
     parse: function(rawstr){
         if (rawstr.indexOf("user-generated-message") < 0) {
             return null;
         }
-        var dec = decodeURIComponent(rawstr);
-        var kvvect = dec.split("&");
-        var kvobj = {};
-        for (var i=0; i<kvvect.length; i++) {
+        var dec = decodeURIComponent(rawstr);  //decoded string
+        var kvvect = dec.split("&");           //separate key value pairs
+        var obj = {};                          //create empty object
+        var root = obj;
+        for (var i=0; i<kvvect.length; i++) { 
             if(kvvect[i].indexOf("=") > 0){
-            var kv = kvvect[i].split("="); //tuple of key and value
-            kvobj[kv[0]] = kvobj[1];
-        }    
+                var kv = kvvect[i].split("=");  //tuple of key and value
+                var key = kv[0];
+                var val = kv[1];
+                var lin = filter(function(arg){return !!arg} , key.split(/[\[\]]/)) //lineage of objects
+                log(lin);
+                for(var j=0; j<lin.length; j++){ //iterate over lineage
+                   log(lin[j]);
+                   try{
+                   if( !obj[lin[j]]){  
+                        if (j==lin.length-1) {
+                            obj[lin[j]] = val;
+                        }
+                        else{
+                            obj[lin[j]] = {};    
+                        }                        
+                    }
+                    obj = obj[lin[j]]; //assign child to variable to recursively iterate
+                   }catch(err){
+                    //log(err);
+                    }
+                }
+                log(root);
+            }    
         }
-        return kvobj;
+        return root;
+    }
+    
+    parse2: function(rawStr){        
+        var dec = decodeURIComponent(rawStr[0]).split("&")
     }
     
 }
